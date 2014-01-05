@@ -6,7 +6,11 @@ enum {
   GPIO_BASE = 0x20200000,
   GPPUD = (GPIO_BASE + 0x94),
   GPPUDCLK0 = (GPIO_BASE + 0x98),
+  GPFSEL1 = (GPIO_BASE + 4),
+
   UART0_BASE = 0x20201000,
+
+  AUX_ENABLE = 0x20215004,
 
   UART0_DR = (UART0_BASE + 0x00),
   UART0_RSRECR = (UART0_BASE + 0x04),
@@ -36,6 +40,20 @@ static void delay(int32_t count)
 
 void uart_init()
 {
+  unsigned int r;
+
+  // Disable Miniuart (used from Bootloader https://github.com/dwelch67/raspberry/bootloader05)
+  r = mmio_read(AUX_ENABLE);
+  r |= (1 << 0);
+  mmio_write(AUX_ENABLE, r);
+
+  // Set GPIO Function 0
+  r = mmio_read(GPFSEL1);
+  r &= ~(7 << 12); r |= (4 << 12);
+  r &= ~(7 << 15); r |= (4 << 15);
+  mmio_write(GPFSEL1, r);
+
+
   mmio_write(UART0_CR, 0x00000000);
 
   mmio_write(GPPUD, 0x00000000);
@@ -45,7 +63,6 @@ void uart_init()
   delay(150);
 
   mmio_write(GPPUDCLK0, 0x00000000);
-
   mmio_write(UART0_ICR, 0x7FF);
 
   // Baudrate 115200
