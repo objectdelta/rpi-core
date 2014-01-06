@@ -17,16 +17,20 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   uart_init();
   uart_puts(hello);
 
-  set_system_timer(TIMER_1, 1000);
+  init_timer();
+
   enable_irq();
 
   for (;;);
+
 }
 
 void c_irq_handler() {
+  
   static volatile int irq_count = 0;
 
   irq_count++;
   uart_putc('0'+(irq_count % 10));
-  set_system_timer(TIMER_1, 1000);  
+
+  reset_timer_irq();
 }

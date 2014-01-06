@@ -5,13 +5,13 @@
 
 Start:
 	ldr pc, reset_handler
-	ldr pc, halt
-	ldr pc, halt
-	ldr pc, halt
-	ldr pc, halt
-	ldr pc, halt
-	ldr pc, irq
-	ldr pc, halt
+	ldr pc, undefined_handler
+	ldr pc, swi_handler
+	ldr pc, prefetch_handler
+	ldr pc, data_handler
+	ldr pc, unused_handler
+	ldr pc, irq_handler
+	ldr pc, fiq_handler
 
 reset_handler:		.word reset
 undefined_handler:	.word halt
@@ -28,6 +28,8 @@ reset:
 
 	ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
 	stmia r1!,{r2,r3,r4,r5,r6,r7,r8,r9}
+	ldmia r0!,{r2,r3,r4,r5,r6,r7,r8,r9}
+	stmia r1!,{r2,r3,r4,r5,r6,r7,r8,r9}
 
 	;@ Stackpointer fuer die einzelnen Modi setzen
 
@@ -39,7 +41,7 @@ reset:
 	mov r0,#0xD1
 	msr cpsr_c,r0
 	mov sp,#0x4000
-	;@ SVC-Mode (Supervisor/Kernel)
+	;@ SVC-Mode (Supervisor/Kernel), IRQ's disabled
 	mov r0,#0xD3
 	msr cpsr_c, r0
 	mov sp,#0x8000
@@ -47,7 +49,7 @@ reset:
 	bl kernel_main
 	
 halt:
-	b halt
+	b reset
 
 irq:
 	push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}

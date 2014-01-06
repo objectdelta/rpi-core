@@ -2,31 +2,59 @@
 #include <timer.h>
 #include <mmio.h>
 
-enum {
-  TIMER_BASE = 0x20203000,
-  TIMER_CS = TIMER_BASE + 0x00,
-  TIMER_CLO = TIMER_BASE + 0x04,
-  TIMER_CHI = TIMER_BASE + 0x08,
-  TIMER_C0 = TIMER_BASE + 0x0C,
-  TIMER_C1 = TIMER_BASE + 0x10,
-  TIMER_C2 = TIMER_BASE + 0x14,
-  TIMER_C3 = TIMER_BASE + 0x18,
+#define SYSTEM_TIMER_HZ 1000000
 
-  ENABLE_BASIC_IRQ = 0x2000B218
+enum {
+  INT_BASE = 0x2000B000,
+  INT_IRQ_BASIC_ENABLE = INT_BASE + 0x218,
+  INT_IRQ_BASIC_PENDING = INT_BASE + 0x200,
+  INT_IRQ_BASIC_DISABLE = INT_BASE + 0x224,
+
+  TIMER_BASE = 0x2000B400,
+  TIMER_LOAD = TIMER_BASE,
+  TIMER_VALUE = TIMER_BASE + 0x04,
+  TIMER_CONTROL = TIMER_BASE + 0x08,
+  TIMER_IRQ_CLEAR = TIMER_BASE + 0x0C,
+  TIMER_RAW_IRQ = TIMER_BASE + 0x10,
+  TIMER_MASKED_IRQ = TIMER_BASE + 0x14,
+  TIMER_RELOAD = TIMER_BASE + 0x18,
+  TIMER_PREDIV = TIMER_BASE + 0x1C,
+  TIMER_FREERUNCTR = TIMER_BASE + 0x20
 };
 
-void set_system_timer(enum timer timer, uint32_t ticks)
+void init_timer()
 {
-  uint32_t r;
+  mmio_write(INT_IRQ_BASIC_DISABLE, 1);
+  mmio_write(TIMER_CONTROL, 0x3E0000);
+  mmio_write(TIMER_PREDIV, 0xF9);
+  mmio_write(TIMER_LOAD, 1000000-1);
+  mmio_write(TIMER_RELOAD, 1000000-1);
+  mmio_write(TIMER_IRQ_CLEAR, 0);
+  mmio_write(TIMER_CONTROL, 0x003E00A2);
+  mmio_write(INT_IRQ_BASIC_ENABLE, 1);
+}
 
-  // Clear match detect...
-  r = mmio_read(TIMER_CS);
-  r &= ~(1 << timer);
-  mmio_write(TIMER_CS, r);
+void reset_timer_irq()
+{
+  mmio_write(TIMER_IRQ_CLEAR, 1);
+}
 
-  // Set Compare Register
-  r = mmio_read(TIMER_C0 + timer);
-  mmio_write(TIMER_C0 + timer, r + ticks);
+void enable_timer_irq()
+{
+  mmio_write(INT_IRQ_BASIC_ENABLE, (1 << 0));
+}
 
-  mmio_write(ENABLE_BASIC_IRQ, 1);
+void disable_timer_irq()
+{
+  mmio_write(INT_IRQ_BASIC_DISABLE, (1 << 0));
+}
+
+int isTimerMaskedIrq()
+{
+  return mmio_read(TIMER_MASKED_IRQ);
+}
+
+int isTimerRawIrq()
+{
+  return mmio_read(TIMER_RAW_IRQ);
 }
