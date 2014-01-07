@@ -26,7 +26,7 @@ WARNFLAGS += -Wno-unused-but-set-variable -Wno-unused-result
 WARNFLAGS += -Wwrite-strings -Wdisabled-optimization -Wpointer-arith
 WARNFLAGS += -Werror
 
-ASFLAGS := $(INCLUDES) $(DEPENDFLAGS) -D__ASSEMBLY__
+ASFLAGS := $(INCLUDES) $(DEPENDFLAGS) -D__ASSEMBLY__ -g
 CFLAGS := $(INCLUDES) $(DEPENDFLAGS) $(BASEFLAGS) $(WARNFLAGS)
 CFLAGS += -std=gnu99 -g
 

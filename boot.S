@@ -1,7 +1,7 @@
 .section ".text.boot"
 
 .globl Start
-
+.globl halt
 
 Start:
 	ldr pc, reset_handler
@@ -14,13 +14,13 @@ Start:
 	ldr pc, fiq_handler
 
 reset_handler:		.word reset
-undefined_handler:	.word halt
-swi_handler:		.word halt
-prefetch_handler:	.word halt
-data_handler:		.word halt
-unused_handler:		.word halt
+undefined_handler:	.word undefined
+swi_handler:		.word svc_call
+prefetch_handler:	.word prefetch
+data_handler:		.word data
+unused_handler:		.word unused
 irq_handler:		.word irq
-fiq_handler:		.word halt
+fiq_handler:		.word fiq
 
 reset:
 	mov r0, #0x8000
@@ -47,14 +47,42 @@ reset:
 	mov sp,#0x8000
 
 	bl kernel_main
-	
 halt:
-	b reset
+	b halt
 
+
+undefined:
+	b undefined
+
+svc_call:
+	subs pc, lr, #4
+
+prefetch:
+	b prefetch
+data:
+	b data
+unused:
+	b unused
+fiq:
+	b fiq
+	
 irq:
-	push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
+	stmdb sp,{r0-lr}^
+	
+	sub sp, #60
+	mrs r0, SPSR
+	stmdb sp, {r0, lr}
+	sub sp, #8
+
 	bl c_irq_handler
-	pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}
+
+	mov sp, r0
+	ldmia sp, {r0, lr}
+	msr spsr_cxsf, r0
+	add sp, #8
+	ldmia sp, {r0-lr}^ 
+	add sp, #60
+	
 	subs pc, lr, #4
 
 

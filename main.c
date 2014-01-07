@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <uart.h>
 #include <timer.h>
+#include <task.h>
 
 extern void enable_irq();
 
@@ -17,6 +18,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   uart_init();
   uart_puts(hello);
 
+  init_tasking();
   init_timer();
 
   enable_irq();
@@ -25,12 +27,19 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
 }
 
-void c_irq_handler() {
-  
+void *c_irq_handler() {
+
+  /*    
   static volatile int irq_count = 0;
+
 
   irq_count++;
   uart_putc('0'+(irq_count % 10));
+  */
+
+  schedule_tasks();
 
   reset_timer_irq();
+
+  return (void*)get_current_task_pcb();
 }
