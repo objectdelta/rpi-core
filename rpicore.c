@@ -2,10 +2,13 @@
 #include <uart.h>
 #include <timer.h>
 #include <task.h>
+#include <rpicore.h>
 
 extern void enable_irq();
 
 #define UNUSED(x) (void)(x)
+
+static uint32_t system_ticks = 0;
 
 const char hello[] = "\r\nThis is >>> rpi-core <<< by ObjectDelta.com, 2014\r\n";
 
@@ -30,17 +33,17 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 void *c_irq_handler() {
 
       
-  static volatile int irq_count = 0;
-
-
-  irq_count = (irq_count + 1) % 1000;
-  if (irq_count == 0)
-    uart_putc('^');
-  
+  system_ticks+=1;
 
   schedule_tasks();
 
   reset_timer_irq();
 
   return (void*)get_current_task_pcb();
+}
+
+
+uint32_t get_system_ticks()
+{
+  return system_ticks;
 }

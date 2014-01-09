@@ -1,6 +1,7 @@
 #include <task.h>
 #include <stdint.h>
 #include <uart.h>
+#include <rpicore.h>
 
 #define MAX_TASKS 10
 #define STACK_SIZE 1024
@@ -18,23 +19,49 @@ static int current_task_index;
 
 extern void halt();
 
-void idle()
+
+const char *idletxt = "abcdefg\r\n";
+const char *idle2txt = "1234567\r\n";
+
+void print(const char *txt)
 {
-  int i;
-  for (;;)
+  if (*txt)
     {
-      uart_putc('.');
-      for (i=0;i<3000000;i++);
+      uart_putc(*txt++);
+      print(txt);
     }
 }
 
-void idle2()
+void idle()
 {
-  int i;
+  static int ticks = 0;
+  ticks = get_system_ticks();
   for (;;)
     {
-      uart_putc('+');
-      for (i=0;i<3000000;i++);
+    
+      if ((get_system_ticks() - ticks) >= 1000)
+	{
+	  print(idletxt);
+	  ticks = get_system_ticks();
+	}
+
+    }
+}
+
+
+void idle2()
+{
+  static int ticks = 0;
+  ticks = get_system_ticks();
+  for (;;)
+    {
+    
+      if ((get_system_ticks() - ticks) >= 1000)
+	{
+	  print(idle2txt);
+	  ticks = get_system_ticks();
+	}
+
     }
 }
 
