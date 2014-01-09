@@ -1,5 +1,10 @@
 PREFIX ?= /home/daniel/rpi/x-tools/TARGET
-ARMGNU ?= $(PREFIX)/bin/arm-unknown-linux-gnueabi
+ARMGNU ?= $(PREFIX)/bin/arm-unknown-linux-gnueabi-
+
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_M), armv6l)
+	ARMGNU := 
+endif
 
 SOURCES_ASM := $(wildcard *.S)
 SOURCES_C := $(wildcard *.c)
@@ -35,10 +40,10 @@ all: kernel.img
 include $(wildcard *.d)
 
 kernel.elf: $(OBJS) link-arm-eabi.ld
-	$(ARMGNU)-ld $(OBJS) -Tlink-arm-eabi.ld -o $@
+	$(ARMGNU)ld $(OBJS) -Tlink-arm-eabi.ld -o $@
 
 kernel.img: kernel.elf
-	$(ARMGNU)-objcopy kernel.elf -O binary kernel.img
+	$(ARMGNU)objcopy kernel.elf -O binary kernel.img
 
 clean:
 	$(RM) -f $(OBJS) kernel.elf kernel.img
@@ -47,7 +52,7 @@ dist-clean: clean
 	$(RM) -f *.d
 
 %.o: %.c Makefile
-	$(ARMGNU)-gcc $(CFLAGS) -c $< -o $@
+	$(ARMGNU)gcc $(CFLAGS) -c $< -o $@
 
 %.o: %.S Makefile
-	$(ARMGNU)-gcc $(ASFLAGS) -c $< -o $@
+	$(ARMGNU)gcc $(ASFLAGS) -c $< -o $@

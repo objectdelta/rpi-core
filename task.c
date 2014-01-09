@@ -12,7 +12,7 @@ struct task_t {
   enum taskstate state;
 };
 
-static uint32_t stacks[MAX_TASKS*2*STACK_SIZE] __attribute__((ALIGN (4096)));
+static uint32_t stacks[MAX_TASKS*3*STACK_SIZE] __attribute__((ALIGN (4096)));
 static struct task_t tasks[MAX_TASKS];
 static int current_task_index;
 
@@ -38,6 +38,24 @@ void idle2()
     }
 }
 
+void reset_task()
+{
+  char c;
+  void (*kernel_reset)() = (void(*)())0x00000000;
+  void (*boot_reset)() = (void(*)())0x00100000;
+  
+  for (;;)
+    {
+      c = uart_getc('+');
+      if (c == 'r')
+	kernel_reset();
+      if (c == 'b')
+	boot_reset();
+ 
+    }
+}
+
+
 void init_tasking()
 {
   int i, j;
@@ -62,6 +80,9 @@ void init_tasking()
 
   // Idle-Task2 (Task 1)
   resume_task(new_task((uint32_t)idle2));
+
+  // Reset-Task2 (Task 2)
+  resume_task(new_task((uint32_t)reset_task));
 
   current_task_index = 0;
 }
