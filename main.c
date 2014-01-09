@@ -29,13 +29,14 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
 void *c_irq_handler() {
 
-  /*    
+      
   static volatile int irq_count = 0;
 
 
-  irq_count++;
-  uart_putc('0'+(irq_count % 10));
-  */
+  irq_count = (irq_count + 1) % 1000;
+  if (irq_count == 0)
+    uart_putc('^');
+  
 
   schedule_tasks();
 

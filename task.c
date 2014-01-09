@@ -24,7 +24,7 @@ void idle()
   for (;;)
     {
       uart_putc('.');
-      for (i=0;i<1000000;i++);
+      for (i=0;i<3000000;i++);
     }
 }
 
@@ -34,7 +34,7 @@ void idle2()
   for (;;)
     {
       uart_putc('+');
-      for (i=0;i<1000000;i++);
+      for (i=0;i<3000000;i++);
     }
 }
 

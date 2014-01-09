@@ -26,9 +26,9 @@ void init_timer()
 {
   mmio_write(INT_IRQ_BASIC_DISABLE, 1);
   mmio_write(TIMER_CONTROL, 0x3E0000);
-  mmio_write(TIMER_PREDIV, 0xF9);
-  mmio_write(TIMER_LOAD, 1000-1);
-  mmio_write(TIMER_RELOAD, 1000-1);
+  mmio_write(TIMER_PREDIV, 0x63);
+  mmio_write(TIMER_LOAD, 10);
+  mmio_write(TIMER_RELOAD, 15);
   mmio_write(TIMER_IRQ_CLEAR, 0);
   mmio_write(TIMER_CONTROL, 0x003E00A2);
   mmio_write(INT_IRQ_BASIC_ENABLE, 1);
